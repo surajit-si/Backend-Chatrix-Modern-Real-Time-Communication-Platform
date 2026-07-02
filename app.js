@@ -36,7 +36,7 @@ import userRouter from "./src/routes/user.routes.js";
 app.use("/api/v1/users", userRouter);
 
 // Global error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
 
