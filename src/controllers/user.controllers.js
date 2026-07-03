@@ -105,6 +105,8 @@ const loginUser = async (req, res) => {
     secure: true,
   };
 
+  console.log(`login successful`);
+
   return res
     .status(200)
     .cookie("refreshToken", refreshToken, options)
