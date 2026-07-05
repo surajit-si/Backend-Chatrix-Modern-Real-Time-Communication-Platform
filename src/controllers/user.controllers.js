@@ -8,6 +8,21 @@ import getOTP from "../utils/getOTP.js";
 import { OTP } from "../models/otp.model.js";
 import { Conversation } from "../models/conversation.model.js";
 
+const getCookieOptions = ({ persistent = false } = {}) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    ...(persistent
+      ? {
+          maxAge: 10 * 365 * 24 * 60 * 60 * 1000,
+        }
+      : {}),
+  };
+};
+
 const generateTokens = async (user_id) => {
   const user = await User.findById(user_id);
 
@@ -100,10 +115,7 @@ const loginUser = async (req, res) => {
     "-password -status -refreshToken",
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
+  const options = getCookieOptions();
 
   console.log(`login successful`);
 
@@ -137,10 +149,7 @@ const logoutUser = async (req, res) => {
   user.refreshToken = undefined;
   await user.save({ validateBeforeSave: false });
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
+  const options = getCookieOptions();
 
   return res
     .clearCookie("refreshToken", options)
@@ -199,10 +208,7 @@ const refreshTokens = async (req, res) => {
   const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
     await generateTokens(decoaded._id);
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
+  const options = getCookieOptions({ persistent: true });
 
   return res
     .status(200)
