@@ -374,14 +374,6 @@ const reSendOtp = async (req, res) => {
 const getUser = async (req, res) => {
   if (!req.user) {
     return res.json(
-      /*  new ApiResponse(
-        400,
-        {
-          status: "failed",
-          navigate: "/landing-page",
-        },
-        "User is not Autherized.",
-      ), */
       new ApiError(401, "user not Autherized", {
         status: "failed",
         navigate: "/landing-page",
@@ -509,6 +501,49 @@ const createConversation = async (req, res) => {
     );
 };
 
+const addMember = async (req, res) => {
+  try {
+    //requered fields
+    const { usernameOrEmail, conversationId } = req.body;
+    if (!usernameOrEmail) {
+      throw new ApiError(400, "username or email is requered.");
+    }
+    if (!conversationId) {
+      throw new ApiError(
+        400,
+        "conversation id not found when processing add member.",
+      );
+    }
+
+    //find user
+    const user = await User.findOne({
+      $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+    });
+
+    if (!user) {
+      throw new ApiError(400, "member not found.");
+    }
+
+    //find conversation
+    const updatedConversation = await Conversation.findByIdAndUpdate(
+      conversationId.trim(),
+      {
+        $addToSet: {
+          participants: user?._id, //it can be use to add multiple user id than single id
+        },
+      },
+    );
+
+    if (!updatedConversation) {
+      throw new ApiError(400, "Invalid conversation or DB error");
+    }
+
+    return res.status(200).json(new ApiResponse(200, { newUser: user }));
+  } catch (error) {
+    throw new ApiError(500, "Internal Server Error when adding member");
+  }
+};
+
 export {
   getUser,
   registerUser,
@@ -520,4 +555,5 @@ export {
   verifyOtp,
   reSendOtp,
   createConversation,
+  addMember,
 };

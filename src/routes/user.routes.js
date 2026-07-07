@@ -10,6 +10,7 @@ import {
   reSendOtp,
   getUser,
   createConversation,
+  addMember,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import varifyJWT from "../middlewares/varifyJWT.js";
@@ -33,9 +34,7 @@ router
 router
   .route("/change-avatar")
   .post(upload.single("avatar"), varifyJWT, asyncHandler(changeUserAvatar));
-router
-  .route("/refreshTokens")
-  .get(upload.none(), asyncHandler(refreshTokens));
+router.route("/refreshTokens").get(upload.none(), asyncHandler(refreshTokens));
 
 router
   .route("/verify-email")
@@ -49,5 +48,8 @@ router
 router
   .route("/create-conversation")
   .post(upload.single("avatar"), varifyJWT, asyncHandler(createConversation));
+router
+.route("/add-member")
+.post(upload.none(), asyncHandler(addMember));
 
 export default router;
