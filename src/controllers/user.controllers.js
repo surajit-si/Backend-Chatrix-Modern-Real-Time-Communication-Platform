@@ -7,6 +7,7 @@ import { sendMail } from "../utils/nodemailer.js";
 import getOTP from "../utils/getOTP.js";
 import { OTP } from "../models/otp.model.js";
 import { Conversation } from "../models/conversation.model.js";
+import { Message } from "../models/message.model.js";
 
 const getCookieOptions = ({ persistent = false } = {}) => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -544,6 +545,99 @@ const addMember = async (req, res) => {
   }
 };
 
+const getMessages = async (req, res) => {
+  const verifiedUser = req.user;
+  if (!verifiedUser?._id) {
+    throw new ApiError(401, "Authentication failed");
+  }
+
+  const { conversationId } = req.body;
+  if (!conversationId) {
+    throw new ApiError(400, "Conversation ID is requered to get messages");
+  }
+
+  //find conversation
+  const conversation = await Conversation.findById(conversationId);
+  if (!conversation) {
+    throw new ApiError(400, "conversation id is not valid");
+  }
+
+  //check if user is participant of the conversation
+  const isParticipant = conversation.participants.some(
+    (id) => id?.toString() === verifiedUser._id.toString(),
+  );
+  if (!isParticipant) {
+    throw new ApiError(
+      400,
+      "You are not eligible because you are not member of the conversation.",
+    );
+  }
+
+  const allMessages = await Message.aggregate([
+    { $match: { conversationId: conversation._id } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "sender",
+        foreignField: "_id",
+        as: "sender",
+        pipeline: [
+          {
+            $project: {
+              password: 0,
+              isVerified: 0,
+              refreshToken: 0,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: "conversations",
+        localField: "conversationId",
+        foreignField: "_id",
+        pipeline: [
+          {
+            $project: {
+              participants: 0,
+              lastMessage: 0,
+              groupAvatar: 0,
+              admins: 0,
+              createdBy: 0,
+            },
+          },
+        ],
+        as: "conversationId",
+      },
+    },
+    {
+      $addFields: {
+        conversation: {
+          $first: "$conversationId",
+        },
+      },
+    },
+    {
+      $addFields: {
+        sender: {
+          $first: "$sender",
+        },
+      },
+    },
+    {
+      $project: {
+        conversationId: 0,
+      },
+    },
+  ]);
+
+  //send response
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { messages: allMessages, date: Date.now() }));
+};
+
 export {
   getUser,
   registerUser,
@@ -556,4 +650,5 @@ export {
   reSendOtp,
   createConversation,
   addMember,
+  getMessages,
 };

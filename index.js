@@ -88,7 +88,7 @@ connectDB()
           }
           //create or save message
           const message = await Message.create({
-            conversationId: conversation?._id,
+            conversationId: conversation,
             sender: socket.user._id,
             content: data?.text,
             messageType: "text",
@@ -106,7 +106,33 @@ connectDB()
               if (!recUser) {
                 return;
               } else {
-                io.to(recUser).emit("new-message", message);
+                io.to(recUser).emit("new-message", {
+                  message: {
+                    _id: message._id,
+                    content: message.content,
+                    conversation: {
+                      __v: conversation.__v,
+                      _id: conversation._id,
+                      createdAt: conversation.createdAt,
+                      groupName: conversation.groupName,
+                      isGroup: conversation.isGroup,
+                      updatedAt: conversation.updatedAt,
+                    },
+                    createdAt: message.createdAt,
+                    messageType: message.messageType,
+                    updatedAt: message.updatedAt,
+                    sender: {
+                      _id: socket.user._id,
+                      email: socket.user.email,
+                      fullName: socket.user.fullName,
+                      username: socket.user.username,
+                    },
+                  },
+                  sender: {
+                    username: socket.user.username,
+                    email: socket.user.email,
+                  },
+                });
               }
             }
           });
