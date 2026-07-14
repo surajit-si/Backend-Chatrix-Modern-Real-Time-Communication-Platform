@@ -116,7 +116,7 @@ const loginUser = async (req, res) => {
     "-password -status -refreshToken",
   );
 
-  const options = getCookieOptions();
+  const options = getCookieOptions({ persistent: true });
 
   console.log(`login successful`);
 
