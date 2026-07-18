@@ -662,11 +662,19 @@ const leaveConversation = async (req, res) => {
       return adminId.equals(verifiedUser._id);
     });
 
+    const isParticipant = userConversation.participants.some((userId) => {
+      return userId.equals(verifiedUser._id);
+    });
+
     if (isAdmin && userConversation.admins.length === 1) {
       throw new ApiError(
         400,
         "You can't leave conversation, you can delete it.",
       );
+    }
+
+    if (!isParticipant) {
+      throw new ApiError(400, "user is not participant of the conversation.");
     }
     //let the admin leave if there is multiple admins
     //if admin
@@ -698,6 +706,55 @@ const leaveConversation = async (req, res) => {
   }
 };
 
+const deleteConversation = async (req, res) => {
+  try {
+    //auth
+    const verifiedUser = req.user;
+    if (!verifiedUser) {
+      throw new ApiError(401, "Authentication failed.");
+    }
+
+    //get all requered fields and verify
+    const { conversationId } = req.body;
+    if (!conversationId) {
+      throw new ApiError(400, "conversationId is requered.");
+    }
+    //try to find conversation
+    const userConversation = await Conversation.findById(conversationId);
+    if (!userConversation) {
+      throw new ApiError(400, "conversation not found.");
+    }
+
+    //check if admin
+    const isAdmin = userConversation.admins.some((adminId) => {
+      return adminId.equals(verifiedUser._id);
+    });
+
+    if (!isAdmin) {
+      throw new ApiError(
+        400,
+        "only admins have the permission to delete conversation.",
+      );
+    }
+
+    //delete conversation
+    await Conversation.findByIdAndDelete(userConversation._id);
+    //delete messages
+    await Message.deleteMany({ conversationId: userConversation._id });
+
+    //send response
+    res.json(
+      new ApiResponse(
+        200,
+        { message: "successfully deleted the conversation." },
+        "successfully deleted the conversation.",
+      ),
+    );
+  } catch (error) {
+    throw new ApiError(500, "Internal Server Error.");
+  }
+};
+
 export {
   getUser,
   registerUser,
@@ -712,4 +769,5 @@ export {
   addMember,
   getMessages,
   leaveConversation,
+  deleteConversation,
 };
