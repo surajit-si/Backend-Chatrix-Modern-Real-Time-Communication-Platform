@@ -638,6 +638,66 @@ const getMessages = async (req, res) => {
     .json(new ApiResponse(200, { messages: allMessages, date: Date.now() }));
 };
 
+const leaveConversation = async (req, res) => {
+  try {
+    //auth
+    const verifiedUser = req.user;
+    if (!verifiedUser) {
+      throw new ApiError(401, "Authentication failed.");
+    }
+
+    //get all requered fields and verify
+    const { conversationId } = req.body;
+    if (!conversationId) {
+      throw new ApiError(400, "conversationId is requered.");
+    }
+    //try to find conversation
+    const userConversation = await Conversation.findById(conversationId);
+    if (!userConversation) {
+      throw new ApiError(400, "conversation not found.");
+    }
+
+    //check if user is a perticipant or not
+    const isAdmin = userConversation.admins.some((adminId) => {
+      return adminId.equals(verifiedUser._id);
+    });
+
+    if (isAdmin && userConversation.admins.length === 1) {
+      throw new ApiError(
+        400,
+        "You can't leave conversation, you can delete it.",
+      );
+    }
+    //let the admin leave if there is multiple admins
+    //if admin
+    if (isAdmin) {
+      userConversation.admins = userConversation.admins.filter((adminId) => {
+        return !adminId.equals(verifiedUser._id);
+      });
+    }
+
+    //for all admin & non-admins
+    userConversation.participants = userConversation.participants.filter(
+      (userId) => {
+        return !userId.equals(verifiedUser._id);
+      },
+    );
+
+    //save
+    await userConversation.save({ validateBeforeSave: false });
+    //send final response
+    res.json(
+      new ApiResponse(
+        200,
+        { message: "successfully leaved conversation" },
+        "successfully leaved conversation",
+      ),
+    );
+  } catch (error) {
+    throw new ApiError(500, "Internal Server Error");
+  }
+};
+
 export {
   getUser,
   registerUser,
@@ -651,4 +711,5 @@ export {
   createConversation,
   addMember,
   getMessages,
+  leaveConversation,
 };
