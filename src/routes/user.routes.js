@@ -12,6 +12,8 @@ import {
   createConversation,
   addMember,
   getMessages,
+  leaveConversation,
+  deleteConversation,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import varifyJWT from "../middlewares/varifyJWT.js";
@@ -53,5 +55,11 @@ router.route("/add-member").post(upload.none(), asyncHandler(addMember));
 router
   .route("/get-messages")
   .post(upload.none(), varifyJWT, asyncHandler(getMessages));
+router
+  .route("/leave-conversation")
+  .post(upload.none(), varifyJWT, asyncHandler(leaveConversation));
+router
+  .route("/delete-conversation")
+  .post(upload.none(), varifyJWT, asyncHandler(deleteConversation));
 
 export default router;
