@@ -1,3 +1,10 @@
 node_modules
 .env
 *.todo
+public/*.jpg
+public/*.jpeg
+public/*.png
+public/*.gif
+public/*.webp
+public/*.tiff
+public/*.svg

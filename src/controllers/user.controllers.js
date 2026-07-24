@@ -46,23 +46,24 @@ const registerUser = async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedUsername = username.trim().toLowerCase();
+
   const avatarLocalPath = req.file?.path;
   if (!avatarLocalPath) {
     throw new ApiError(400, "avatar is required");
   }
 
-  const existedUser = await User.findOne({
-    $or: [{ username }, { email }],
+  const existingEmailUser = await User.findOne({ email: normalizedEmail });
+  if (existingEmailUser) {
+    throw new ApiError(400, "Email already registered");
+  }
+
+  const existingUsernameUser = await User.findOne({
+    username: normalizedUsername,
   });
-
-  if (existedUser) {
-    if (existedUser.email === email) {
-      throw new ApiError(400, "Email already registered");
-    }
-
-    if (existedUser.username === username) {
-      throw new ApiError(400, "Username is already occupied");
-    }
+  if (existingUsernameUser) {
+    throw new ApiError(400, "Username is already occupied");
   }
 
   const avatarLink = await uploadOnCloudinary(avatarLocalPath);
@@ -70,19 +71,27 @@ const registerUser = async (req, res) => {
     throw new ApiError(500, "Error when getting avatarLink");
   }
 
-  const user = await User.create({
-    fullName,
-    username,
-    password,
-    email,
-    avatar: avatarLink.url,
-  });
+  try {
+    const user = await User.create({
+      fullName,
+      username: normalizedUsername,
+      password,
+      email: normalizedEmail,
+      avatar: avatarLink.url,
+    });
 
-  const createdUser = await User.findById(user?._id).select(
-    "-password -refreshToken -status",
-  );
+    const createdUser = await User.findById(user?._id).select(
+      "-password -refreshToken -status",
+    );
 
-  return res.status(200).json(new ApiResponse(200, createdUser, "Success"));
+    return res.status(200).json(new ApiResponse(200, createdUser, "Success"));
+  } catch (error) {
+    if (error?.code === 11000) {
+      throw new ApiError(400, "Username or email already exists");
+    }
+
+    throw error;
+  }
 };
 
 const loginUser = async (req, res) => {
