@@ -432,6 +432,48 @@ const getUser = async (req, res) => {
     },
     {
       $lookup: {
+        from: "messages",
+        localField: "lastMessage",
+        foreignField: "_id",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "sender",
+              foreignField: "_id",
+              pipeline: [
+                {
+                  $project: {
+                    isVerified: 0,
+                    password: 0,
+                    refreshToken: 0,
+                    status: 0,
+                  },
+                },
+              ],
+              as: "sender",
+            },
+          },
+          {
+            $addFields: {
+              sender: {
+                $first: "$sender",
+              },
+            },
+          },
+        ],
+        as: "lastMessage",
+      },
+    },
+    {
+      $addFields: {
+        lastMessage: {
+          $first: "$lastMessage",
+        },
+      },
+    },
+    {
+      $lookup: {
         from: "users",
         localField: "createdBy",
         foreignField: "_id",
