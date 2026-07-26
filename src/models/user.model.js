@@ -3,6 +3,39 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { type } from "os";
 
+const userColors = [
+  "#FF6B6B",
+  "#FF8E72",
+  "#FFB347",
+  "#FFD700",
+  "#F4D03F",
+  "#82E0AA",
+  "#58D68D",
+  "#5DADE2",
+  "#5499C7",
+  "#AF7AC5",
+  "#D7BDE2",
+  "#F1948A",
+  "#E74C3C",
+  "#76D7C4",
+  "#48C9B0",
+  "#A2D9CE",
+  "#D2B4DE",
+  "#A9CCE3",
+  "#AED6F1",
+  "#F9E79F",
+  "#F5CBA7",
+  "#EDBB99",
+  "#E59866",
+  "#D7BDE2",
+  "#D2B4DE",
+  "#F7DC6F",
+  "#F8C471",
+  "#EB984E",
+  "#D35400",
+  "#C0392B",
+];
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -15,6 +48,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
+    },
+    textColor: {
+      type: String,
+      required: true,
+      default: function () {
+        const randonIDX = Math.floor(Math.random() * userColors.length);
+
+        return userColors[randonIDX];
+      },
     },
     password: {
       type: String,
