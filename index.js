@@ -86,6 +86,7 @@ connectDB()
                 "You don't have permission to message in the conversation.",
             });
           }
+
           //create or save message
           const message = await Message.create({
             conversationId: conversation,
@@ -126,6 +127,7 @@ connectDB()
                       email: socket.user.email,
                       fullName: socket.user.fullName,
                       username: socket.user.username,
+                      textColor: socket.user.textColor,
                     },
                   },
                   sender: {
