@@ -1,16 +1,31 @@
 import nodemailer from "nodemailer";
 
+const smtpUser = process.env.NODEMAILER_USER?.trim();
+const smtpPass = process.env.NODEMAILER_PASS?.trim();
+
+if (!smtpUser || !smtpPass) {
+  console.warn(
+    "Email is not configured: NODEMAILER_USER and NODEMAILER_PASS are required.",
+  );
+}
+
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: Number(process.env.SMTP_PORT || 465),
+  secure: process.env.SMTP_SECURE
+    ? process.env.SMTP_SECURE === "true"
+    : Number(process.env.SMTP_PORT || 465) === 465,
   auth: {
-    user: process.env.NODEMAILER_USER,
-    pass: process.env.NODEMAILER_PASS,
+    user: smtpUser,
+    pass: smtpPass,
   },
 });
 
 const sendMail = async (to, sub, OTP) => {
+  if (!smtpUser || !smtpPass) {
+    throw new Error("SMTP credentials are not configured");
+  }
+
   const otpHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -102,12 +117,22 @@ const sendMail = async (to, sub, OTP) => {
 
 </body>
   </html>`;
-  return await transporter.sendMail({
-    from: process.env.NODEMAILER_USER,
-    to: to,
-    subject: sub,
-    html: otpHtml,
-  });
+  try {
+    return await transporter.sendMail({
+      from: smtpUser,
+      to: to,
+      subject: sub,
+      html: otpHtml,
+    });
+  } catch (error) {
+    console.error("Failed to send email", {
+      code: error?.code,
+      responseCode: error?.responseCode,
+      command: error?.command,
+      response: error?.response,
+    });
+    throw error;
+  }
 };
 
 export { sendMail };
