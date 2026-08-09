@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
-import { sendMail } from "../utils/nodemailer.js";
+import { sendMail } from "../utils/brevo.mail.js";
 import getOTP from "../utils/getOTP.js";
 import { OTP } from "../models/otp.model.js";
 import { Conversation } from "../models/conversation.model.js";
@@ -256,7 +256,7 @@ const sendOtpEmail = async (req, res) => {
         otp: generatedOtp.toString(),
         user_id: userId.toString(),
       }).catch((err) => {
-        throw new ApiError(500, "error when sending code");
+        throw new ApiError(500, "error when sending OTP");
       });
 
       return res

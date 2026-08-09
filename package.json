@@ -12,6 +12,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^6.0.2",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.0",
     "cookie": "^1.1.1",

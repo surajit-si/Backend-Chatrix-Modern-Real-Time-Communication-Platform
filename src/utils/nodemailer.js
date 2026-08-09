@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendMail = async (to, sub, OTP) => {
+const sendNodemailerMail = async (to, sub, OTP) => {
   if (!smtpUser || !smtpPass) {
     throw new Error("SMTP credentials are not configured");
   }
@@ -135,4 +135,4 @@ const sendMail = async (to, sub, OTP) => {
   }
 };
 
-export { sendMail };
+export { sendNodemailerMail };

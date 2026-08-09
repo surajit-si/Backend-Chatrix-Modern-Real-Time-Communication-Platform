@@ -9,6 +9,7 @@ import { User } from "./src/models/user.model.js";
 import jwt from "jsonwebtoken";
 import { Conversation } from "./src/models/conversation.model.js";
 import { Message } from "./src/models/message.model.js";
+import { sendMail } from "./src/utils/brevo.mail.js";
 
 const PORT = process.env.PORT;
 connectDB()
@@ -16,7 +17,6 @@ connectDB()
     //create server
     const server = http.createServer(app);
 
-    //
     const allowedOrigins =
       process.env.CORS_ORIGIN === "*"
         ? true
