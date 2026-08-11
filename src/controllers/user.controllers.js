@@ -151,7 +151,6 @@ const logoutUser = async (req, res) => {
 
   const user = req.user;
   //remove refresh token from db
-
   if (!user) {
     throw new ApiError(401, "user is not in Database");
   }
@@ -164,7 +163,7 @@ const logoutUser = async (req, res) => {
   return res
     .clearCookie("refreshToken", options)
     .clearCookie("accessToken", options)
-    .json(new ApiResponse(200, {}, "success"));
+    .json(new ApiResponse(200, {}, "success", true, true, "/"));
 
   /*
   The approach is good but we need to create a middleware called Verify JWT that will get the cookies data and search on database that named by the ID is any user. Then it will go to the user and check the database user refresh token matching the web user refresh token or not. If it is matching it will send the user to respond sorry request dot user.

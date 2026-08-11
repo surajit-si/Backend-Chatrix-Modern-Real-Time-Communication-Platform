@@ -33,7 +33,7 @@ router
 router.route("/login").post(upload.none(), asyncHandler(loginUser));
 router
   .route("/logout")
-  .post(upload.none(), varifyJWT, asyncHandler(logoutUser));
+  .get(upload.none(), varifyJWT, asyncHandler(logoutUser));
 router
   .route("/change-avatar")
   .post(upload.single("avatar"), varifyJWT, asyncHandler(changeUserAvatar));
