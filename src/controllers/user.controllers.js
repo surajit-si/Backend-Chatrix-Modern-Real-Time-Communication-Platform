@@ -127,7 +127,7 @@ const loginUser = async (req, res) => {
 
   const options = getCookieOptions({ persistent: true });
 
-  console.log(`login successful`);
+  console.log(`login successful of user ${updatedUser._id}`);
 
   return res
     .status(200)
@@ -194,7 +194,12 @@ const changeUserAvatar = async (req, res) => {
 const refreshTokens = async (req, res) => {
   const { refreshToken } = req.cookies;
   if (!refreshToken) {
-    throw new ApiError(401, "refresh token not found");
+    throw new ApiError(
+      401,
+      "refresh token not found",
+      {},
+      "User don't have ant refresh token.",
+    );
   }
 
   let decoaded;

@@ -40,7 +40,7 @@ app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
 
-  console.error("Error:", err?.stack || err);
+  console.error("Error:", err?.err || err?.stack);
 
   res.status(statusCode).json(new ApiResponse(statusCode, null, message));
 });
