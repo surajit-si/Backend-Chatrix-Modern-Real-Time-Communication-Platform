@@ -35,6 +35,11 @@ import userRouter from "./src/routes/user.routes.js";
 //user router
 app.use("/api/v1/users", userRouter);
 
+//stay awake router
+import stayAwakeRouter from "./src/routes/stayAwake.routes.js";
+
+app.use("/api/v1/stay-awake", stayAwakeRouter);
+
 // Global error handling middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

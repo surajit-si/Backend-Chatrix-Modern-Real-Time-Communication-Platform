@@ -31,9 +31,7 @@ router
   .route("/register")
   .post(upload.single("avatar"), asyncHandler(registerUser));
 router.route("/login").post(upload.none(), asyncHandler(loginUser));
-router
-  .route("/logout")
-  .get(upload.none(), varifyJWT, asyncHandler(logoutUser));
+router.route("/logout").get(upload.none(), varifyJWT, asyncHandler(logoutUser));
 router
   .route("/change-avatar")
   .post(upload.single("avatar"), varifyJWT, asyncHandler(changeUserAvatar));
