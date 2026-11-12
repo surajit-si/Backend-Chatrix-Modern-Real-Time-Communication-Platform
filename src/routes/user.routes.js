@@ -14,6 +14,7 @@ import {
   getMessages,
   leaveConversation,
   deleteConversation,
+  sendImage,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import varifyJWT from "../middlewares/varifyJWT.js";
@@ -59,5 +60,8 @@ router
 router
   .route("/delete-conversation")
   .post(upload.none(), varifyJWT, asyncHandler(deleteConversation));
+router
+  .route("/send-image")
+  .post(upload.single("image"), varifyJWT, asyncHandler(sendImage));
 
 export default router;

@@ -799,6 +799,15 @@ const deleteConversation = async (req, res) => {
   );
 };
 
+const sendImage = async (req, res) => {
+  const verifiedUser = req.user;
+  if (!verifiedUser) {
+    throw new ApiError(401, "Authentication failed.");
+  }
+
+  console.log(req.file || req.files);
+};
+
 export {
   getUser,
   registerUser,
@@ -814,4 +823,5 @@ export {
   getMessages,
   leaveConversation,
   deleteConversation,
+  sendImage,
 };
