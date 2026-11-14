@@ -805,7 +805,61 @@ const sendImage = async (req, res) => {
     throw new ApiError(401, "Authentication failed.");
   }
 
-  console.log(req.file || req.files);
+  const { conversationId } = req.body;
+  if (!conversationId) {
+    throw new ApiError(401, "conversationId is required!");
+  }
+
+  //? validate
+  const conversation = await Conversation.findById(conversationId);
+
+  if (!conversation) {
+    throw new ApiError(404, "no conversation found!");
+  }
+
+  const isParticipant = conversation.participants.some(
+    (id) => id.toString() == verifiedUser._id,
+  );
+
+  if (!isParticipant) {
+    throw new ApiError(
+      401,
+      "You don't have premission for doing the activity!",
+    );
+  }
+
+  //? save to cloudinary
+  const response = await uploadOnCloudinary(req.file.path);
+
+  //? add to the conversation message
+  const createdMessage = await Message.create({
+    sender: verifiedUser._id,
+    content: response.secure_url,
+    conversationId: conversation._id,
+    messageType: "image",
+    bytes: response.bytes,
+    format: response.format,
+    height: response.height,
+    width: response.width,
+  });
+
+  //send response
+  res.json(
+    new ApiResponse(
+      200,
+      {
+        width: response.width,
+        height: response.height,
+        format: response.format,
+        resource_type: response.resource_type,
+        created_at: response.created_at,
+        bytes: response.bytes,
+        url: res.url,
+        secure_url: response.secure_url,
+      },
+      "successfully saved image.",
+    ),
+  );
 };
 
 export {

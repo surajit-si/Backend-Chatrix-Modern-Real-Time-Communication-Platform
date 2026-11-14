@@ -12,6 +12,7 @@ import { Message } from "./src/models/message.model.js";
 import { sendMail } from "./src/utils/brevo.mail.js";
 
 const PORT = process.env.PORT;
+
 connectDB()
   .then(() => {
     //create server
@@ -144,6 +145,45 @@ connectDB()
             message: "Failed to save messages",
           });
         }
+      });
+
+      socket.on("send-image", (data) => {
+        const { currConversation, content, messageType, createdAt, updatedAt } =
+          data;
+
+        currConversation.participants.forEach((participant) => {
+          const onlineUser = connectedUsers.get(participant._id);
+          if (!onlineUser) return;
+
+          //? if users is connected
+          io.to(onlineUser).emit("new-message", {
+            message: {
+              content: content,
+              conversation: {
+                __v: currConversation.__v,
+                _id: currConversation._id,
+                createdAt: currConversation.createdAt,
+                groupName: currConversation.groupName,
+                isGroup: currConversation.isGroup,
+                updatedAt: currConversation.updatedAt,
+              },
+              createdAt: createdAt,
+              updatedAt: updatedAt,
+              messageType: messageType,
+              sender: {
+                _id: socket.user._id,
+                email: socket.user.email,
+                fullName: socket.user.fullName,
+                username: socket.user.username,
+                textColor: socket.user.textColor,
+              },
+            },
+            sender: {
+              username: socket.user.username,
+              email: socket.user.email,
+            },
+          });
+        });
       });
 
       socket.on("disconnect", () => {

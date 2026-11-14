@@ -25,6 +25,18 @@ const messageSchema = new mongoose.Schema(
       enum: ["text", "image", "video", "audio", "file"],
       default: "text",
     },
+    width: {
+      type: Number,
+    },
+    height: {
+      type: Number,
+    },
+    format: {
+      type: String,
+    },
+    bytes: {
+      type: Number,
+    },
   },
   { timestamps: true },
 );

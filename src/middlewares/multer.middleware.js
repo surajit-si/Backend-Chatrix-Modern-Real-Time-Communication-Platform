@@ -5,8 +5,8 @@ const storage = multer.diskStorage({
     cb(null, "public");
   },
   filename: function (req, file, cb) {
-    const rdmUID = crypto.randomUUID;
-    cb(null, `${file.originalname}-${rdmUID}`);
+    const rdmUID = crypto.randomUUID();
+    cb(null, `${rdmUID}-${file.originalname}`);
   },
 });
 
