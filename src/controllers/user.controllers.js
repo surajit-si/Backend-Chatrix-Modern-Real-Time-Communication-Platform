@@ -1,13 +1,16 @@
 import { User } from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
-import uploadOnCloudinary from "../utils/cloudinary.js";
+import uploadOnCloudinary, {
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { sendMail } from "../utils/brevo.mail.js";
 import getOTP from "../utils/getOTP.js";
 import { OTP } from "../models/otp.model.js";
 import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
+import { v2 } from "cloudinary";
 
 const getCookieOptions = ({ persistent = false } = {}) => {
   const isProduction = process.env.NODE_ENV === "production";
@@ -784,9 +787,22 @@ const deleteConversation = async (req, res) => {
     );
   }
 
-  //delete conversation
+  //* delete conversation
   await Conversation.findByIdAndDelete(userConversation._id);
-  //delete messages
+  //* delete cloudinary media
+  const messages = await Message.find({ conversationId: userConversation._id });
+  await Promise.all(
+    messages.map(async (msg) => {
+      if (msg.messageType === "image") {
+        try {
+          await deleteFromCloudinary(msg.content);
+        } catch (error) {
+          console.error("Failed to delete media from Cloudinary:", error);
+        }
+      }
+    }),
+  );
+  //* delete messages
   await Message.deleteMany({ conversationId: userConversation._id });
 
   //send response
