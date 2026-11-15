@@ -104,8 +104,6 @@ async function sendMail(to, sub, otp) {
       subject: sub,
       htmlContent: htmlTemplate,
     });
-
-    console.log(response);
   } catch (error) {
     console.log(error);
     throw error;

@@ -197,6 +197,6 @@ connectDB()
     });
   })
   .catch((err) => {
-    console.log(err);
+    console.error(err);
     throw new Error("app crashed at app");
   });
